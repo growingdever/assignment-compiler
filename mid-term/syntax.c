@@ -11,6 +11,8 @@ int syntax_err=0;
 int line_no=1;
 int current_level=0;
 
+int after_initialized = 0;
+
 // make new node for syntax tree
 A_NODE *makeNode (NODE_NAME n, A_NODE *a, A_NODE *b, A_NODE *c) {
 	A_NODE *m;
@@ -149,14 +151,14 @@ A_SPECIFIER *updateSpecifier(A_SPECIFIER *p, A_TYPE *t, S_KIND s) {
 			if (p->type==t)
 				;
 			else
-				syntax_error(24);
+				syntax_error(24, "");
 		else
 			p->type=t;
 	if (s) {
 		if (p->stor)
 			if(s==p->stor) ;
 			else
-				syntax_error(24);
+				syntax_error(24, "");
 		else
 			p->stor=s; }
 	return (p);
@@ -239,11 +241,11 @@ A_ID *setFunctionDeclaratorSpecifier(A_ID *id, A_SPECIFIER *p) {
 	A_ID *a;
 	// check storage class
 	if (p->stor)
-		syntax_error(25);
+		syntax_error(25, "");
 	setDefaultSpecifier(p);
 	// check function identifier immediately before '('
 	if (id->type->kind!=T_FUNC){
-		syntax_error(21);
+		syntax_error(21, "");
 		return(id);}
 	else {
 		id=setDeclaratorElementType(id,p->type);
@@ -264,7 +266,7 @@ A_ID *setFunctionDeclaratorSpecifier(A_ID *id, A_SPECIFIER *p) {
 				if (strlen(a->name))
 					current_id=a;
 				else if (a->type)
-					syntax_error(23);
+					syntax_error(23, "");
 				a=a->link; }
 	return(id);
 }
@@ -300,7 +302,7 @@ A_ID *setParameterDeclaratorSpecifier(A_ID *id, A_SPECIFIER *p) {
 		syntax_error(12,id->name);
 	// check papameter storage class && void type
 	if (p->stor || p->type==void_type)
-		syntax_error(14);
+		syntax_error(14, "");
 	setDefaultSpecifier(p);
 	id=setDeclaratorElementType(id,p->type);
 	id->kind=ID_PARM;
@@ -321,7 +323,7 @@ A_ID *setStructDeclaratorListSpecifier(A_ID *id, A_TYPE *t) {
 A_TYPE *setTypeNameSpecifier(A_TYPE *t, A_SPECIFIER *p) {
 	// check storage class in type name
 	if (p->stor)
-		syntax_error(20);
+		syntax_error(20, "");
 	setDefaultSpecifier(p);
 	t=setTypeElementType(t,p->type);
 	return(t);
@@ -405,47 +407,55 @@ BOOLEAN isNotSameType(A_TYPE *t1, A_TYPE *t2) {
 	else
 		return (t1!=t2);
 }
+
 void initialize() {
 	// primitive data types
-	int_type=setTypeAndKindOfDeclarator(
-	makeType(T_ENUM),ID_TYPE,makeIdentifier("int"));
-	float_type=setTypeAndKindOfDeclarator(
-	makeType(T_ENUM),ID_TYPE,makeIdentifier("float"));
-	char_type= setTypeAndKindOfDeclarator(
-	makeType(T_ENUM),ID_TYPE,makeIdentifier("char"));
-	void_type=setTypeAndKindOfDeclarator(
-	makeType(T_VOID),ID_TYPE,makeIdentifier("void"));
-	string_type=setTypeElementType(makeType(T_POINTER),char_type);
-	int_type->size=4; int_type->check=TRUE;
-	float_type->size=4; float_type->check=TRUE;
-	char_type->size=1; char_type->check=TRUE;
-	void_type->size=0; void_type->check=TRUE;
-	string_type->size=4; string_type->check=TRUE;
+	int_type = setTypeAndKindOfDeclarator(
+			makeType(T_ENUM), ID_TYPE, makeIdentifier("int"));
+	float_type = setTypeAndKindOfDeclarator(
+			makeType(T_ENUM), ID_TYPE, makeIdentifier("float"));
+	char_type = setTypeAndKindOfDeclarator(
+			makeType(T_ENUM), ID_TYPE, makeIdentifier("char"));
+	void_type = setTypeAndKindOfDeclarator(
+			makeType(T_VOID), ID_TYPE, makeIdentifier("void"));
+	string_type = setTypeElementType(makeType(T_POINTER), char_type);
+	int_type->size = 4;
+	int_type->check = TRUE;
+	float_type->size = 4;
+	float_type->check = TRUE;
+	char_type->size = 1;
+	char_type->check = TRUE;
+	void_type->size = 0;
+	void_type->check = TRUE;
+	string_type->size = 4;
+	string_type->check = TRUE;
 	// printf(char *, ...) library function
 	setDeclaratorTypeAndKind(
-	makeIdentifier("printf"),
-	setTypeField(
-	setTypeElementType(makeType(T_FUNC),void_type),
-	linkDeclaratorList(
-	setDeclaratorTypeAndKind(makeDummyIdentifier(),string_type,ID_PARM),
-	setDeclaratorKind(makeDummyIdentifier(),ID_PARM))),
-	ID_FUNC);
+			makeIdentifier("printf"),
+			setTypeField(
+					setTypeElementType(makeType(T_FUNC), void_type),
+					linkDeclaratorList(
+							setDeclaratorTypeAndKind(makeDummyIdentifier(), string_type, ID_PARM),
+							setDeclaratorKind(makeDummyIdentifier(), ID_PARM))),
+			ID_FUNC);
 	// scanf(char *, ...) library function
 	setDeclaratorTypeAndKind(
-	makeIdentifier("scanf"),
-	setTypeField(
-	setTypeElementType(makeType(T_FUNC),void_type),
-	linkDeclaratorList(
-	setDeclaratorTypeAndKind(makeDummyIdentifier(),string_type,ID_PARM),
-	setDeclaratorKind(makeDummyIdentifier(),ID_PARM))),
-	ID_FUNC);
+			makeIdentifier("scanf"),
+			setTypeField(
+					setTypeElementType(makeType(T_FUNC), void_type),
+					linkDeclaratorList(
+							setDeclaratorTypeAndKind(makeDummyIdentifier(), string_type, ID_PARM),
+							setDeclaratorKind(makeDummyIdentifier(), ID_PARM))),
+			ID_FUNC);
 	// malloc(int) library function
 	setDeclaratorTypeAndKind(
-	makeIdentifier("malloc"),
-	setTypeField(
-	setTypeElementType(makeType(T_FUNC),string_type),
-	setDeclaratorTypeAndKind(makeDummyIdentifier(),int_type,ID_PARM)),
-	ID_FUNC);
+			makeIdentifier("malloc"),
+			setTypeField(
+					setTypeElementType(makeType(T_FUNC), string_type),
+					setDeclaratorTypeAndKind(makeDummyIdentifier(), int_type, ID_PARM)),
+			ID_FUNC);
+
+	after_initialized = 1;
 }
 void syntax_error(int i,char *s) {
 	syntax_err++;
