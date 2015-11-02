@@ -34,7 +34,7 @@ int lex_error() {
 	return 0;
 }
 
-void yyerror(char *s) {
+int yyerror(char *s) {
 	printf("%d %s\n", yynerrs, s);
 	exit(1);
 }
