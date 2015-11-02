@@ -13,7 +13,12 @@ int multiply(int a, int b) {
 }
 
 void main() {
+    int three = 3;
+    int four = 4;
+    int what = three < four ? three : four;
 	int i;
-	i = multiply(120, 3);
+
+	i = multiply(120, what);
+
 	printf("result = %d\n", i);
 }

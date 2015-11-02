@@ -91,6 +91,7 @@ while { return(WHILE_SYM); }
 "\." { return(PERIOD); }
 "\," { return(COMMA); } 
 "\!" { return(EXCL); }
+"\?" { return(QUESTION); }
 "\*" { return(STAR); }
 "\/" { return(SLASH); }
 "\%" { return(PERCENT); } 

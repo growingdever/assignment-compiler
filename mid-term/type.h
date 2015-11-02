@@ -45,6 +45,7 @@ typedef enum e_node_name {
     N_EXP_AND,
     N_EXP_OR,
     N_EXP_ASSIGN,
+    N_EXP_CONDITIONAL,
     N_ARG_LIST,
     N_ARG_LIST_NIL,
     N_STMT_LABEL_CASE,
