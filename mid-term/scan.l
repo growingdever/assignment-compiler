@@ -106,5 +106,6 @@ while { return(WHILE_SYM); }
 \"([^"\n]|\\["\n])*\" { yylval=makeString(yytext); return(STRING_LITERAL); }
 \'([^'\n]|\'\')\' { yylval=*(yytext+1); return(CHARACTER_CONSTANT); }
 "//"[^\n]* { }
+"/*"[^*]*"*"+([^/*][^*]*"*"+)*"/" { }
 
 %%
