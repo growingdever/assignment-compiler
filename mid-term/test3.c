@@ -1,4 +1,4 @@
-enum { ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN };
+enum e_numbers { ZERO, ONE, TWO, THREE, FOUR, FIVE, SIX, SEVEN, EIGHT, NINE, TEN } numbers;
 
 void main() {
 	int arr[FIVE] = { TWO, FOUR, SIX, EIGHT };
