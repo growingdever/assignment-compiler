@@ -168,11 +168,27 @@ void print_enum(A_ID* id) {
 void print_initializer(A_NODE *node) {
     switch (node->name) {
         case N_INIT_LIST:
-            print_initializer(node->llink);
-            print_initializer(node->rlink);
+        {
+            int is_first = 1;
+
+            printf(" = { ");
+
+            while (node != NULL && node->name != N_INIT_LIST_NIL) {
+                if (!is_first) {
+                    printf(", ");
+                }
+                is_first = 0;
+
+                print_expression(node->llink->clink);
+
+                node = node->rlink;
+            }
+
+            printf(" }");
+        }
             break;
         case N_INIT_LIST_ONE:
-            printf(" = ");
+            printf (" = ");
             print_expression(node->clink);
             break;
         case N_INIT_LIST_NIL:
@@ -247,6 +263,16 @@ void print_statement(A_NODE* statement) {
             print_expression(statement->clink);
             printf(";\n");
             break;
+        case N_STMT_FOR:
+            printf("for (");
+            print_expression(statement->llink);
+            printf(") {\n");
+            indentation_depth++;
+            print_compound_statement(statement->rlink);
+            indentation_depth--;
+            print_indentation();
+            printf("}\n");
+            break;
     }
 }
 
@@ -266,6 +292,14 @@ void print_expression(A_NODE* node) {
             break;
         case N_EXP_STRING_LITERAL :
             print_string((char *) node->clink);
+            break;
+        case N_EXP_POST_INC:
+            print_expression(node->clink);
+            printf(" ++");
+            break;
+        case N_EXP_POST_DEC:
+            print_expression(node->clink);
+            printf(" --");
             break;
         case N_EXP_MUL :
         case N_EXP_DIV :
@@ -294,6 +328,19 @@ void print_expression(A_NODE* node) {
             break;
         case N_EXP_FUNCTION_CALL:
             print_function_call(node);
+            break;
+        case N_EXP_ARRAY:
+            print_expression(node->llink);
+            printf("[");
+            print_expression(node->rlink);
+            printf("]");
+            break;
+        case N_FOR_EXP:
+            print_expression(node->llink);
+            printf("; ");
+            print_expression(node->clink);
+            printf("; ");
+            print_expression(node->rlink);
             break;
     }
 }
