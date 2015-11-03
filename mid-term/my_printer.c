@@ -48,33 +48,84 @@ void print_all_identifiers(A_ID *identifer) {
 void print_identifier(A_ID* identifier) {
     print_indentation();
 
-    if (identifier->specifier == S_TYPEDEF) {
-        printf("typedef ");
+    A_TYPE* type = identifier->type;
+    if (type == int_type) {
+        printf ("%s : ", identifier->name);
+        print_type(type);
+        if (identifier->init != NULL) {
+            print_initializer(identifier->init);
+        }
+    } else if (type == float_type) {
+        printf ("%s : ", identifier->name);
+        print_type(type);
+        if (identifier->init != NULL) {
+            print_initializer(identifier->init);
+        }
+    } else if (type == char_type) {
+        printf ("%s : ", identifier->name);
+        print_type(type);
+        if (identifier->init != NULL) {
+            print_initializer(identifier->init);
+        }
+    } else if (type == string_type) {
+        printf ("%s : ", identifier->name);
+        print_type(type);
+        if (identifier->init != NULL) {
+            print_initializer(identifier->init);
+        }
+    } else if (type == void_type) {
+        printf ("%s : ", identifier->name);
+        print_type(type);
+        if (identifier->init != NULL) {
+            print_initializer(identifier->init);
+        }
+    } else {
+        if (type->kind == T_STRUCT) {
+            print_struct(identifier);
+        } else if (type->kind == T_FUNC) {
+            print_function(identifier);
+        } else if (type->kind == T_ENUM) {
+            print_enum(identifier);
+        } else if (type->kind == T_ARRAY) {
+            printf ("%s : ", identifier->name);
+            print_type(type);
+            if (identifier->init != NULL) {
+                print_initializer(identifier->init);
+            }
+        } else if (type->kind == T_POINTER) {
+            printf ("%s : ", identifier->name);
+            print_type(type);
+            if (identifier->init != NULL) {
+                print_initializer(identifier->init);
+            }
+        }
+    }
+}
+
+void print_type(A_TYPE* type) {
+    if (type == NULL) {
+        return;
     }
 
-    A_TYPE* type = identifier->type;
-    if (type->kind == T_STRUCT) {
-        print_struct(identifier);
-    } else if (type->kind == T_FUNC) {
-        print_function(identifier);
+    print_type (type->element_type);
+
+    if (type == int_type) {
+        printf ("int");
+    } else if (type == float_type) {
+        printf ("float");
+    } else if (type == char_type) {
+        printf ("char");
+    } else if (type == string_type) {
+        printf ("char*");
+    } else if (type == void_type) {
+        printf ("void");
     } else {
-        if (identifier->type == int_type)
-            printf("int ");
-        else if (identifier->type == float_type)
-            printf("float ");
-        else if (identifier->type == char_type)
-            printf("char[%d] ", identifier->type->size);
-        else if (identifier->type == void_type)
-            printf("void ");
-        else if (identifier->type->kind == T_NULL)
-            printf("(null) ");
-        else if (identifier->type->prt)
-            printf("* ");
-        printf("%s", identifier->name);
-        if (identifier->kind == ID_ENUM_LITERAL) {
-            print_expression(identifier->init);
-        } else {
-            print_initializer(identifier->init);
+        if (type->kind == T_ARRAY) {
+            printf("[");
+            print_expression(type->expr);
+            printf("]");
+        } else if (type->kind == T_POINTER) {
+            printf ("*");
         }
     }
 }
@@ -82,7 +133,7 @@ void print_identifier(A_ID* identifier) {
 void print_struct(A_ID* id) {
     printf("struct %s {\n", id->name);
     indentation_depth++;
-    print_fields(id->type->field);
+    print_all_fields(id->type->field);
     indentation_depth--;
     printf("}\n");
 }
@@ -108,6 +159,12 @@ void print_function(A_ID* id) {
     printf("}\n");
 }
 
+void print_enum(A_ID* id) {
+    printf("enum {");
+    print_all_enumerators(id->type->field);
+    printf("} %s", id->name);
+}
+
 void print_initializer(A_NODE *node) {
     switch (node->name) {
         case N_INIT_LIST:
@@ -125,10 +182,29 @@ void print_initializer(A_NODE *node) {
     }
 }
 
-void print_fields(A_ID* fields) {
+void print_all_fields(A_ID *fields) {
     print_indentation();
     while(fields != NULL) {
         print_identifier(fields);
+        fields = fields->link;
+    }
+}
+
+void print_all_enumerators(A_ID *fields) {
+    int is_first = 1;
+
+    print_indentation();
+    while(fields != NULL) {
+        if (!is_first) {
+            printf(", ");
+        }
+        is_first = 0;
+
+        printf("%s", fields->name);
+        if (fields->init != NULL) {
+            print_initializer(fields->init);
+        }
+
         fields = fields->link;
     }
 }
