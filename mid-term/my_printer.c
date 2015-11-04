@@ -135,7 +135,8 @@ void print_struct(A_ID* id) {
     indentation_depth++;
     print_all_fields(id->type->field);
     indentation_depth--;
-    printf("}\n");
+    print_indentation();
+    printf("}");
 }
 
 void print_function(A_ID* id) {
@@ -152,11 +153,14 @@ void print_function(A_ID* id) {
     else if (id->type->element_type->prt)
         printf("* ");
 
-    printf("%s {\n", id->name);
+    printf("%s (", id->name);
+    print_all_parameters(id->type->field);
+    printf(") {\n");
+
     indentation_depth++;
     print_compound_statement(id->type->expr);
     indentation_depth--;
-    printf("}\n");
+    printf("}");
 }
 
 void print_enum(A_ID* id) {
@@ -198,10 +202,25 @@ void print_initializer(A_NODE *node) {
     }
 }
 
+void print_all_parameters(A_ID *params) {
+    int is_first = 1;
+
+    while(params != NULL) {
+        if (!is_first) {
+            printf(", ");
+        }
+        is_first = 0;
+
+        print_identifier(params);
+
+        params = params->link;
+    }
+}
+
 void print_all_fields(A_ID *fields) {
-    print_indentation();
     while(fields != NULL) {
         print_identifier(fields);
+        printf(";\n");
         fields = fields->link;
     }
 }
@@ -273,6 +292,11 @@ void print_statement(A_NODE* statement) {
             print_indentation();
             printf("}\n");
             break;
+        case N_STMT_RETURN:
+            printf("return ");
+            print_expression(statement->clink);
+            printf(";\n");
+            break;
     }
 }
 
@@ -292,6 +316,10 @@ void print_expression(A_NODE* node) {
             break;
         case N_EXP_STRING_LITERAL :
             print_string((char *) node->clink);
+            break;
+        case N_EXP_AMP:
+            printf("&");
+            print_expression(node->clink);
             break;
         case N_EXP_POST_INC:
             print_expression(node->clink);
@@ -335,6 +363,12 @@ void print_expression(A_NODE* node) {
             print_expression(node->rlink);
             printf("]");
             break;
+        case N_EXP_STRUCT:
+        case N_EXP_ARROW:
+            print_expression(node->llink);
+            print_operator(node);
+            print_string((char *) node->rlink);
+            break;
         case N_FOR_EXP:
             print_expression(node->llink);
             printf("; ");
@@ -373,6 +407,12 @@ void print_operator(A_NODE* node) {
             break;
         case N_EXP_ASSIGN:
             printf(" = ");
+            break;
+        case N_EXP_STRUCT:
+            printf(".");
+            break;
+        case N_EXP_ARROW:
+            printf("->");
             break;
     }
 }
