@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include "gen.h"
 #include "semantic.h"
+#include "syntax.h"
 
 
 char *opcode_name[] = {
