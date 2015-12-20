@@ -777,6 +777,10 @@ void gen_initializer_global(A_NODE *node, A_TYPE *t, int addr) {
 }
 
 void gen_initializer_local(A_NODE *node, A_TYPE *t, int addr) {
+    gen_code_i(LDA, 1, addr);
+    gen_code_i(LITI, 0, (int) node->clink->clink);
+    gen_code_i(STX, 0, 1);
+    gen_code_i(POP, 0, 1);
 }
 
 void gen_declaration_list(A_ID *id) {
