@@ -105,6 +105,7 @@ void gen_program(A_NODE *node) {
     switch (node->name) {
         case N_PROGRAM :
             gen_code_i(INT, 0, node->value);
+            gen_global_init_list((A_ID *) node->clink);
             gen_code_s(SUP, 0, "main");
             gen_code_i(RET, 0, 0);
             gen_declaration_list((A_ID *) node->clink);
@@ -112,6 +113,21 @@ void gen_program(A_NODE *node) {
         default :
             gen_error(100, node->line, "");
             break;
+    }
+}
+
+void gen_global_init_list(A_ID *id) {
+    while (id) {
+        if (id->kind == ID_VAR && id->level == 0 && id->init) {
+            gen_initializer_global(id->init, id->type, id->address);
+        } else if (id->kind == ID_FUNC) {
+            A_ID* fields = (A_ID *) id->type->expr->llink;
+            gen_global_init_list(fields);
+        } else {
+
+        }
+
+        id = id->link;
     }
 }
 
@@ -774,6 +790,10 @@ void gen_statement_list(A_NODE *node, int cont_label, int break_label, A_SWITCH 
 }
 
 void gen_initializer_global(A_NODE *node, A_TYPE *t, int addr) {
+    gen_code_i(LDA, 0, addr);
+    gen_expression(node->clink);
+    gen_code_i(STX, 0, 1);
+    gen_code_i(POP, 0, 1);
 }
 
 void gen_initializer_local(A_NODE *node, A_TYPE *t, int addr) {
@@ -797,9 +817,8 @@ void gen_declaration(A_ID *id) {
         case ID_VAR:
             if (id->init) {
                 if (id->level == 0) {
-                    gen_initializer_global(id->init, id->type, id->address);
-                }
-                else {
+                    // skip here
+                } else {
                     gen_initializer_local(id->init, id->type, id->address);
                 }
             }

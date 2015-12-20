@@ -89,6 +89,8 @@ void gen_literal_table();
 
 void gen_program(A_NODE *);
 
+void gen_global_init_list(A_ID *);
+
 void gen_expression(A_NODE *);
 
 void gen_expression_left(A_NODE *);
