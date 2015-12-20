@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "semantic.h"
+#include "syntax.h"
 
 #define LIT_MAX 100
 
@@ -642,10 +643,22 @@ int sem_declaration(A_ID *id, int addr) {
         case ID_VAR:
             i = sem_A_TYPE(id->type);
             // check empty array
-            if (isArrayType(id->type) && id->type->expr == NIL)
+            if (isArrayType(id->type) && id->type->expr == NIL) {
                 semantic_error(86, id->line, "");
-            if (i % 4) i = i / 4 * 4 + 4;
-            if (id->specifier == S_STATIC) id->level = 0;
+            }
+
+            if (i % 4) {
+                i = i / 4 * 4 + 4;
+            }
+
+            if (id->init) {
+                sem_expression(id->init->clink);
+            }
+
+            if (id->specifier == S_STATIC) {
+                id->level = 0;
+            }
+
             if (id->level == 0) {
                 id->address = global_address;
                 global_address += i;
